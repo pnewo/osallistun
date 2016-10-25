@@ -13,21 +13,49 @@ import {
 } from 'react-native';
 
 class osallistun extends Component {
+  constructor() {
+    super()
+    this.state = {
+      loading: true,
+      movies: []
+    }
+  }
+
+  componentDidMount() {
+    getMoviesFromApi().then(movies => {
+      this.setState({
+        loading: false,
+        movies: movies
+      })
+    })
+  }
+
   render() {
+    const loadingElement = <Text style={styles.instructions}>Loading</Text>
+    let loading = this.state.loading ? loadingElement : null
     return (
       <View style={styles.container}>
+        {loading}
         <Text style={styles.welcome}>
           Welcome to React Native!
         </Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.ios.js
-        </Text>
-        <Text style={styles.instructions}>
-          Press Cmd+R to reload,{'\n'}
-          Cmd+D or shake for dev menu
-        </Text>
+        {this.state.movies.map(movie =>
+          <Text key={movie.title} style={styles.instructions}>
+            {movie.title}
+          </Text>
+        )}
       </View>
     );
+  }
+}
+
+async function getMoviesFromApi() {
+  try {
+    let response = await fetch('https://facebook.github.io/react-native/movies.json');
+    let responseJson = await response.json();
+    return responseJson.movies;
+  } catch(error) {
+    console.error(error);
   }
 }
 
