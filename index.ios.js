@@ -17,16 +17,25 @@ class osallistun extends Component {
     super()
     this.state = {
       loading: true,
-      movies: []
+      sessionId: '',
+      data: { status: 0 }
     }
   }
 
   componentDidMount() {
-    getMoviesFromApi().then(movies => {
-      this.setState({
-        loading: false,
-        movies: movies
-      })
+    checkSessionStatus(this.state.sessionId).then(data => {
+      if (data) {
+        this.setState({
+          loading: false,
+          data: data
+        })
+      } else {
+        this.setState({
+          loading: false,
+          data: {status: 0}
+        })
+      }
+
     })
   }
 
@@ -39,26 +48,42 @@ class osallistun extends Component {
         <Text style={styles.welcome}>
           Welcome to React Native!
         </Text>
-        {this.state.movies.map(movie =>
-          <Text key={movie.title} style={styles.instructions}>
-            {movie.title}
-          </Text>
-        )}
+        <Text style={styles.instructions}>
+          {this.state.data.status}
+        </Text>
       </View>
     );
   }
 }
 
-async function getMoviesFromApi() {
+async function checkSessionStatus(sessionId) {
   try {
-    // https://osallistujat.com/api-1.0/getUser.php?loginData[username]=pneuvo&loginData[password]=sha1hashed
-    let response = await fetch('https://facebook.github.io/react-native/movies.json');
+    let userUrlWithId = userUrl.replace('SESSIONID', sessionId)
+    let data = await fetchDataFromApi(userUrlWithId)
+    return data
+  } catch(error) {
+    console.error(error)
+  }
+}
+
+async function fetchDataFromApi(url) {
+  try {
+    let response = await fetch(url);
     let responseJson = await response.json();
-    return responseJson.movies;
+    return responseJson;
   } catch(error) {
     console.error(error);
   }
 }
+
+const baseUrl = 'https://osallistujat.com/api-1.0/',
+      userBaseUrl = 'getUser.php',
+      eventsBaseUrl = 'getEvents.php',
+      loginUrl = '?loginData[username]=USERNAME&loginData[password]=PASSWORDSH1',
+      sessionUrl = '?loginData[sessionId]=SESSIONID',
+      userLoginUrl = baseUrl + userBaseUrl + loginUrl,
+      userUrl = baseUrl + userBaseUrl + sessionUrl,
+      eventsUrl = baseUrl + eventsBaseUrl + sessionUrl;
 
 const styles = StyleSheet.create({
   container: {
