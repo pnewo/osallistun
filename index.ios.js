@@ -51,6 +51,7 @@ class osallistun extends Component {
 
 async function getMoviesFromApi() {
   try {
+    // https://osallistujat.com/api-1.0/getUser.php?loginData[username]=pneuvo&loginData[password]=sha1hashed
     let response = await fetch('https://facebook.github.io/react-native/movies.json');
     let responseJson = await response.json();
     return responseJson.movies;
